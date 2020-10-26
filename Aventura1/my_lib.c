@@ -60,32 +60,30 @@ En caso de que strlen(src) < n, el resto de la cadena apuntada por dest ha de se
 */
 char *my_strncpy(char *dest, const char *src, size_t n) {
     int len = my_strlen(src);
-
-    if(n <= len) {
-        while(n) {
+    if(n <= len){ //Copiamos n caracteres sin '\0'
+        while(n){
             *dest = *src;
             dest++;
             src++;
-            len--;
+            n--;
         }
-    }else {
+    }else{ //Copiamos n carácteres y rellenamos con '\0'
         int k = n - (len + 1);
-        while(len) {
+        while(len){
             *dest = *src;
             dest++;
             src++;
             len--;
         }
-
+        //Una vez copiados los carácteres añadimos '\0'
         *dest = '\0';
-        while(k) {
+        while(k){
             dest++;
             k--;
             *dest = '\0';
         }
     }
-
-    return *dest;
+    return dest;
 }
 
 /*
