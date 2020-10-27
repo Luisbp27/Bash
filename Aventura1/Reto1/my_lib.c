@@ -28,8 +28,8 @@ int my_strcmp(const char *str1, const char *str2) {
 
     while (str1[i] && (str1[i] != str2[i])) {
         if (str1[i] != str2[i]) {
-            //Realizamos la diferencia correspondiente a los caracteres ASCII
-            //como hace srtcmp()
+            // Realizamos la diferencia correspondiente a los caracteres ASCII
+            // como hace srtcmp()
             cmp = *(const unsigned char *)str1 - *(const unsigned char *)str2;
         }
 
@@ -63,14 +63,14 @@ char *my_strncpy(char *dest, const char *src, size_t n) {
     char* paux = dest;
     int len = my_strlen(src);
 
-    if (n <= len) { //Copiamos n caracteres sin '\0'
+    if (n <= len) { // Copiamos n caracteres sin '\0'
         while (n) {
             *paux = *src;
             paux++;
             src++;
             n--;
         }
-    }else { //Copiamos todos los carácteres y rellenamos con '\0'
+    }else { // Copiamos todos los carácteres y rellenamos con '\0'
         int resto = n - (len + 1);
 
         while (len) {
@@ -80,7 +80,7 @@ char *my_strncpy(char *dest, const char *src, size_t n) {
             len--;
         }
 
-        //Una vez copiados los carácteres añadimos '\0'
+        // Una vez copiados los carácteres añadimos '\0'
         *paux = '\0';
         while (resto) {
             paux++;
@@ -99,15 +99,15 @@ El primer carácter de src sobreescribe el carácter nulo de dest.
 Devuelve el puntero dest. No devuelve error.
 */
 char *my_strcat(char *dest, const char *src) {
-        //Guardamos el puntero para añadir la concatenación
+        // Guardamos el puntero para añadir la concatenación
         char* new_dest = dest;
         
-        //Nos movemos al final de dest
+        // Nos movemos al final de dest
         while(*dest) {
           dest++;
         }
 
-        //Concatenamos 'dest' con 'src'
+        // Concatenamos 'dest' con 'src'
         while(*src) {
           *dest++ = *src++;
         }
