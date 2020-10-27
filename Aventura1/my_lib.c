@@ -28,10 +28,10 @@ int my_strcmp(const char *str1, const char *str2) {
 
     while (str1[i] && (str1[i] != str2[i])) {
         if (str1[i] != str2[i]) {
+            //Realizamos la diferencia correspondiente a los caracteres ASCII
+            //como hace srtcmp()
             cmp = *(const unsigned char *)str1 - *(const unsigned char *)str2;
-            //cmp = str1[i] - str2[i];
         }
-
         i++;
     }
 
@@ -45,11 +45,12 @@ Devuelve el puntero dest. No devuelve error.
 */
 char *my_strcpy(char *dest, const char *src) {
     int c = 0;
-    for (c; src[c]; c++) {
+
+    for (int i = 0; src[i]; i++,c++) {
         dest[c] = src[c];
     }
-
     dest[c] = '\0';
+
     return dest;
 }
 
@@ -58,10 +59,10 @@ La función strncpy() copia n caracteres de la cadena apuntada por src (con el c
 en la memoria apuntada por dest. Devuelve el puntero dest. No devuelve error.
 En caso de que strlen(src) < n, el resto de la cadena apuntada por dest ha de ser rellenado con 0s. 
 */
-char *my_strncpy(char *dest, const char *src, size_t n)
-{
+char *my_strncpy(char *dest, const char *src, size_t n) {
     char* paux = dest;
     int len = my_strlen(src);
+
     if (n <= len) { //Copiamos n caracteres sin '\0'
         while (n) {
             *paux = *src;
@@ -98,24 +99,21 @@ El primer carácter de src sobreescribe el carácter nulo de dest.
 Devuelve el puntero dest. No devuelve error.
 */
 char *my_strcat(char *dest, const char *src) {
-    int size_dest = sizeof(dest);
-    int size_src = sizeof(src);
-    char new_dest[size_dest + size_src];
-    int i = 0;
-    int j = 0;
+        //Guardamos el puntero para añadir la concatenación
+        char* new_dest = dest;
+        
+        //Nos movemos al final de dest
+        while(*dest) {
+          dest++;
+        }
 
-    // Concatenamos la primera secuencia de caracteres al nuevo array
-    while (i < size_dest) {
-        new_dest[i] = dest[i];
-        i++;
-    }
-
-    // Concatenamos la segunda secuencia de caracteres también al nuevo array
-    for (i; j < size_src; i++) {
-        new_dest[i] = src[j];
-        j++;
-    }
-    new_dest[i] = '\0';
-
+        //Concatenamos 'dest' con 'src'
+        while(*src) {
+          *dest++ = *src++;
+        }
+        
+        //Añadimos el null a dest
+        *dest = '\0'; 
+    
     return new_dest;
 }
