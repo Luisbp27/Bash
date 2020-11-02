@@ -56,9 +56,10 @@ char *my_strcpy(char *dest, const char *src) {
 }
 
 /*
-La función strncpy() copia n caracteres de la cadena apuntada por src (con el carácter de terminación ‘\0’) 
-en la memoria apuntada por dest. Devuelve el puntero dest. No devuelve error.
-En caso de que strlen(src) < n, el resto de la cadena apuntada por dest ha de ser rellenado con 0s. 
+La función strncpy() copia n caracteres de la cadena apuntada por src 
+(con el carácter de terminación ‘\0’) en la memoria apuntada por dest. 
+Devuelve el puntero dest. No devuelve error.En caso de que strlen(src) < n, el resto 
+de la cadena apuntada por dest ha de ser rellenado con 0s. 
 */
 char *my_strncpy(char *dest, const char *src, size_t n) {
     char* paux = dest;
@@ -128,8 +129,8 @@ Devuelve un puntero a la pila inicializada.
 */
 struct my_stack *my_stack_init(int size) {
     struct my_stack *stack = malloc(sizeof(struct my_stack));
-    stack->first = NULL;
-    stack->size = size;
+    stack -> first = NULL;
+    stack -> size = size;
 
     return stack;
 }
@@ -142,14 +143,14 @@ int my_stack_push(struct my_stack *stack, void *data) {
     int r = -1;
 
     if (stack) {
-        if (stack->size > 0) {   
+        if (stack -> size > 0) {   
             //Creamos un nuevo nodo con los datos de los parámetros
             //Y "actualizamos" el nuevo "top" de la pila, que sería nuestro first.
             struct my_stack_node *new_node = malloc(sizeof(new_node));
-            new_node->data = data;
-            new_node->next = stack->first;
+            new_node -> data = data;
+            new_node -> next = stack -> first;
 
-            stack->first = new_node;
+            stack -> first = new_node;
             r = 0;
         }
     }
@@ -165,11 +166,13 @@ Si no existe nodo superior (pila vacía), retorna NULL.
 */
 
 void *my_stack_pop(struct my_stack *stack) {
-    if (stack->first) {
-        struct my_stack_node *temp_node = malloc(sizeof(temp_node)); //PREGUNNTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        temp_node->next = stack->first;
-        //stack->first = temp_node->next;
-        void *datos = temp_node->data;
+    if (stack -> first) {
+        struct my_stack_node *temp_node = malloc(sizeof(temp_node));    // PREGUNTAR A ADELAIDA!
+        temp_node = stack -> first;
+        // Copiamo los datos que a continuación se eliminarán
+        void *datos = temp_node -> data;
+        // Asignamos el nuevo "top" del stack y así "borramos" el primer nodo
+        stack -> first = temp_node -> next;
         
         free(temp_node);
 
@@ -180,67 +183,61 @@ void *my_stack_pop(struct my_stack *stack) {
 }
 
 /*
-void *my_stack_pop(struct my_stack *stack)
-{
-    if (stack->first)
-    {
-        struct my_stack_node *temp_node = malloc(sizeof(temp_node)); //PREGUNNTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        struct my_stack_node *delte_node = malloc(sizeof(delte_node));
-
-        delte_node = stack->first;
-        temp_node = stack->first;
-
-        stack->first = temp_node->next;
-
-        //free(delte_node);
-        return temp_node;
-    }
-    else
-    {
-        return NULL;
-    }
-}
-*/
-
-/*
 Recorre la pila y retorna el número de nodos totales que hay en los elementos de la pila.
 */
 int my_stack_len(struct my_stack *stack) {
     int contador = 0;
     struct my_stack_node *temp_node = malloc(sizeof(temp_node));
-    temp_node = stack->first;
+    temp_node = stack -> first;
 
     //Recorrido hasta el final de la pilay augmentamos el contador
     while (temp_node) {
-        temp_node = temp_node->next;
+        temp_node = temp_node -> next;
         contador++;
     }
-    free(temp_node);    //PREGUNNTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    free(temp_node);    // PREGUNTAR A ADELAIDA!
 
     return contador;
 }
 
 /*
 Recorre la pila liberando la memoria que habíamos reservado para cada uno de los datos 
-(data) y la de cada nodo. Finalmente libera también la memoria que ocupa la pila. Es decir, toda la memoria que se reservó con malloc() en algún momento, se libera con la función free(). 
+(data) y la de cada nodo. Finalmente libera también la memoria que ocupa la pila. Es decir, 
+toda la memoria que se reservó con malloc() en algún momento, se libera con la función free(). 
 
 Devuelve el número de bytes liberados.  
 */
 int my_stack_purge (struct my_stack *stack) {
     int contador = 0;
     struct my_stack_node *temp_node = malloc(sizeof(temp_node));
-    temp_node = stack->first;
+    temp_node = stack -> first;
 
-    //Recorrido hasta el final de la pilay augmentamos el contador
+    //Recorrido hasta el final de la pila y aumentamos el contador
     while (temp_node) {
-        temp_node = temp_node->next;
+        temp_node = temp_node -> next;
         contador++;
     }
 
-    contador *= sizeof(temp_node);
-    contador += sizeof(stack);
+    contador *= sizeof(temp_node); 
+    contador *= sizeof(stack -> size);
+    contador += sizeof(stack); 
+    
 
-    free(temp_node);    //PREGUNNTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    free(temp_node);    // PREGUNTAR A ADELAIDA!
 
     return contador;
+}
+
+/*
+Almacena los datos de la pila en el fichero indicado por filename
+*/
+int my_stack_write (struct my_stack *stack, char *filename) {
+
+}
+
+/*
+Lee los datos de la pila almacenados en el fichero
+*/
+struct my_stack *my_stack_read (char *filename) {
+
 }
