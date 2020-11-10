@@ -1,3 +1,5 @@
+// Luis Barca Pons, Joan Martorell Ferriol, Jorge González Pascual
+
 #include <stdio.h>
 #include "my_lib.h"
 
@@ -114,7 +116,7 @@ char *my_strcat(char *dest, const char *src) {
           *dest++ = *src++;
         }
         
-        //Añadimos el null a dest
+        // Añadimos el null a dest
         *dest = '\0'; 
     
     return new_dest;
@@ -129,7 +131,13 @@ Devuelve un puntero a la pila inicializada.
 */
 struct my_stack *my_stack_init(int size) {
     struct my_stack *stack = malloc(sizeof(struct my_stack));
-    stack -> first = NULL;
+    if (stack == NULL) { // Control de errores
+        fprintf(stderr, "No hay espacio en memoria dinámica disponible en este momento.\n");
+
+        return NULL;
+    }
+
+    stack -> top = NULL;
     stack -> size = size;
 
     return stack;
@@ -140,22 +148,27 @@ Inserta un nuevo nodo en los elementos de la pila (hay que reservar espacio de m
 El puntero a los datos de ese nodo nos lo pasan como parámetro.
 */
 int my_stack_push(struct my_stack *stack, void *data) {
-    int r = -1;
-
+    // Valor de retorno del método
+    int e = -1;
+    // Miramos si la pila esta inicializada
     if (stack) {
-        if (stack -> size > 0) {   
-            //Creamos un nuevo nodo con los datos de los parámetros
-            //Y "actualizamos" el nuevo "top" de la pila, que sería nuestro first.
+        if (stack -> size > 0) {
+            // Creamos un nuevo nodo con los datos de los parámetros
+            // Y "actualizamos" el nuevo top de la pila.
             struct my_stack_node *new_node = malloc(sizeof(new_node));
+            if (new_node == NULL) {
+                fprintf(stderr, "No hay espacio en memoria dinámica disponible en este momento.\n");
+                return e;
+            }
             new_node -> data = data;
-            new_node -> next = stack -> first;
+            new_node -> next = stack -> top;
 
-            stack -> first = new_node;
-            r = 0;
+            stack -> top = new_node;
+            e = 0;
         }
     }
 
-    return r;
+    return e;
 }
 
 /*
@@ -164,18 +177,18 @@ Devuelve el puntero a los datos del elemento eliminado.
 
 Si no existe nodo superior (pila vacía), retorna NULL.
 */
-
 void *my_stack_pop(struct my_stack *stack) {
-    if (stack -> first) {
-        struct my_stack_node *temp_node = malloc(sizeof(temp_node));    // PREGUNTAR A ADELAIDA!
-        temp_node = stack -> first;
-        // Copiamo los datos que a continuación se eliminarán
-        void *datos = temp_node -> data;
-        // Asignamos el nuevo "top" del stack y así "borramos" el primer nodo
-        stack -> first = temp_node -> next;
-        
-        free(temp_node);
+    if (stack -> top){
+        //Creamos un nodo temporal
+        struct my_stack_node *temp_node = stack -> top;
 
+        //Copiamos los datos que a continuación se eliminarán
+        void *datos = temp_node -> data;
+
+        //Asignamos el nuevo "top" del stack y así "borramos" el primer nodo
+        stack -> top = temp_node -> next;
+
+        free(temp_node);
         return datos;
     }else {
         return NULL;
@@ -186,18 +199,17 @@ void *my_stack_pop(struct my_stack *stack) {
 Recorre la pila y retorna el número de nodos totales que hay en los elementos de la pila.
 */
 int my_stack_len(struct my_stack *stack) {
-    int contador = 0;
-    struct my_stack_node *temp_node = malloc(sizeof(temp_node));
-    temp_node = stack -> first;
+    //Contador de nodos
+    int i = 0;
+    struct my_stack_node *temp_node = stack -> top;
 
-    //Recorrido hasta el final de la pilay augmentamos el contador
+    // Recorrido hasta el final de la pila y aumentamos el i
     while (temp_node) {
-        temp_node = temp_node -> next;
-        contador++;
+        temp_node = temp_node->next;
+        i++;
     }
-    free(temp_node);    // PREGUNTAR A ADELAIDA!
 
-    return contador;
+    return i;
 }
 
 /*
@@ -205,39 +217,116 @@ Recorre la pila liberando la memoria que habíamos reservado para cada uno de lo
 (data) y la de cada nodo. Finalmente libera también la memoria que ocupa la pila. Es decir, 
 toda la memoria que se reservó con malloc() en algún momento, se libera con la función free(). 
 
-Devuelve el número de bytes liberados.  
+Devuelve el número de bytes liberados.
 */
-int my_stack_purge (struct my_stack *stack) {
-    int contador = 0;
-    struct my_stack_node *temp_node = malloc(sizeof(temp_node));
-    temp_node = stack -> first;
+int my_stack_purge(struct my_stack *stack) {
+    int bytes = sizeof(struct my_stack); // Bytes de la pila
 
-    //Recorrido hasta el final de la pila y aumentamos el contador
-    while (temp_node) {
-        temp_node = temp_node -> next;
-        contador++;
+    // Recorrido por toda la pila
+    while (stack -> top)
+    {
+        bytes += sizeof(struct my_stack_node); // Bytes de cada nodo
+        bytes += stack -> size;                // Bytes de los datos
+        free(my_stack_pop(stack));             // my_stack_pop retorna la posición de los datos
+                                               // que eliminamos de la pila
     }
 
-    contador *= sizeof(temp_node); 
-    contador *= sizeof(stack -> size);
-    contador += sizeof(stack); 
-    
-
-    free(temp_node);    // PREGUNTAR A ADELAIDA!
-
-    return contador;
+    free(stack); // Liberamos toda la pila
+    return bytes;
 }
 
 /*
-Almacena los datos de la pila en el fichero indicado por filename
+Función auxiliar del write
 */
-int my_stack_write (struct my_stack *stack, char *filename) {
+int aux_my_stack_write(struct my_stack_node *node, int fichero, int size) {
+    // Inicializa a 0 i mira si no es el último nodo
+    int bytes = 0;
+    if (node -> next) {
+        // Llama de nuevo a la funcion con el nodo como entrada
+        bytes = aux_my_stack_write(node -> next, fichero, size);
+    }
 
+    // Escribe el nodo en el fichero y devuelve los bytes escritos
+    return write(fichero, node -> data, size) + bytes;
+} 
+
+/*
+Almacena los datos de la pila en el fichero indicado por "filename"
+*/
+int my_stack_write(struct my_stack *stack, char *filename) {
+    int bytes = -1;
+    // Creamos el enlace al fichero
+    int fichero = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+
+    // Control de error de open
+    if (fichero < 0) {
+        fprintf(stderr, "Error al abrir el fichero\n");
+        return bytes;
+    }
+
+    bytes = write(fichero, &stack->size, sizeof(stack->size)); // write(fichero, dato a escribir, tamaño del tado)
+                                                               // y nos devuelve los bytes escritos
+    bytes = aux_my_stack_write(stack -> top, fichero, stack -> size);
+
+    // Cerramos el enlace al fichero y devolvemos el número de datos escritos, con control de errores
+    if (close(fichero) == -1) {
+        fprintf(stderr, "Error al cerrar el fichero\n");
+        return -1;
+    }
+
+    // Control de errores al escribir
+    if (bytes == -1) {
+        fprintf(stderr, "Error al escribir en el archivo\n");
+        return bytes;
+    }
+    else {
+        return bytes / stack -> size;
+    }
 }
 
 /*
-Lee los datos de la pila almacenados en el fichero
+Lee los datos de la pila almacenados en el fichero indicado por "filename"
 */
-struct my_stack *my_stack_read (char *filename) {
+struct my_stack *my_stack_read(char *filename) {
+    int size;
+    struct my_stack *stack;
+    void *data;
 
+    // Creamos el enlace al fichero
+    int fichero = open(filename, O_RDONLY);
+
+    // Control de errores
+    if (fichero < 0) {
+        fprintf(stderr, "Error al abrir el fichero\n");
+        return NULL;
+    }
+
+    // Cogemos el tamaño del data del fichero
+    read(fichero, &size, sizeof(int));
+
+    // Inicializamos el stack (usando init) y también el data
+    stack = my_stack_init(size);
+    data = malloc(size);
+    if (data == NULL) {
+        fprintf(stderr, "No hay espacio en memoria dinámica disponible en este momento.\n");
+        return NULL;
+    }
+
+    // Bucle para restaurar los nodos
+    while (read(fichero, data, size) > 0) {
+        // Reservamos memoria para el data
+        my_stack_push(stack, data);
+        data = malloc(size);
+        if (data == NULL) {
+            fprintf(stderr, "No hay espacio en memoria dinámica disponible en este momento.\n");
+            return NULL;
+        }
+    }
+
+    // Cerramos el enlace con el fichero
+    if (close(fichero) < 0) {
+        fprintf(stderr, "Error al cerrar el fichero\n");
+    }
+
+    return stack;
 }

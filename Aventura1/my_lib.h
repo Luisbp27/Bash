@@ -27,7 +27,7 @@ struct my_stack_node {      // Nodo de la pila (elemento)
 
 struct my_stack {   // Pila
     int size;       // Tamaño de data, nos lo pasarán por parámetro
-    struct my_stack_node *first;  // Apunta al nodo de la parte superior
+    struct my_stack_node *top;  // Apunta al nodo de la parte superior
 };  
 
 //declaraciones funciones gestor de pila
