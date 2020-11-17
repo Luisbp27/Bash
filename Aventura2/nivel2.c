@@ -35,11 +35,9 @@ int internal_jobs(char **args);
 /*
 * Main del programa.
 */
-int main()
-{
+int main() {
     while (1)
-        if (read_line(line))
-            execute_line(line);
+        if (read_line(line)) execute_line(line);
 
     return 0;
 }
@@ -47,10 +45,8 @@ int main()
 /*
 *   Método para imprimir el PROMPT
 */
-void imprimir_prompt()
-{
-
-    //Get USERNAME
+void imprimir_prompt() {
+    // Coge el nombre de usuario
     char *user = getenv("USER");
 
     char *prompt = malloc(sizeof(char) * COMMAND_LINE_SIZE);
@@ -69,14 +65,12 @@ void imprimir_prompt()
 /*
 Leer una linea de la consola
 */
-char *read_line(char *line)
-{
+char *read_line(char *line) {
     imprimir_prompt();
 
     // Reads input introduced in stdin by the user.
     // Control de errores
-    if (fgets(line, COMMAND_LINE_SIZE, stdin) == NULL)
-    {
+    if (fgets(line, COMMAND_LINE_SIZE, stdin) == NULL) {
         perror("Error");
     }
 
@@ -86,19 +80,15 @@ char *read_line(char *line)
 /*
 *
 */
-int execute_line(char *line)
-{
-
+int execute_line(char *line) {
     //Reservamos memoria para los tokens
 
     char **args = malloc(sizeof(char *) * ARGS_SIZE);
-    if (args == NULL)
-    {
+    if (args == NULL) {
         fprintf(stderr, "Memoria dinamica llena.");
     }
 
-    if (args)
-    {
+    if (args) {
         //Parseamos
         parse_args(args, line);
         if (args[0])
@@ -106,13 +96,13 @@ int execute_line(char *line)
             check_internal(args);
         }
     }
+
     //Liberamos memoria
     free(args);
 }
 
-//{line hacer esto #para esto} args[x][0]
-int parse_args(char **args, char *line)
-{
+// {line hacer esto #para esto} args[x][0]
+int parse_args(char **args, char *line) {
     int nToken = 0;
     const char s[5] = " \t\r\n";
     char *token;
@@ -123,9 +113,9 @@ int parse_args(char **args, char *line)
     while (token != NULL)
     {
 
-#if DEBUG
+    #if DEBUG
         printf("[parse_args() → token %d: %s]\n", nToken, token);
-#endif
+    #endif
         //Descartamos comentarios
         if (*(token) != '#')
         {
@@ -136,20 +126,20 @@ int parse_args(char **args, char *line)
             //Añadimos NULL
             token = NULL;
             args[nToken] = token;
-#if DEBUG
+    #if DEBUG
             printf("[parse_args() → token %d corregido: %s]\n", nToken, token);
-#endif
+    #endif
         }
 
         //Siguiete
         token = strtok(NULL, s);
         nToken++;
     }
+
     return nToken;
 }
 
-int check_internal(char **args)
-{
+int check_internal(char **args) {
     int comandoInterno = 0;
 
     const char cd[] = "cd";
@@ -160,38 +150,25 @@ int check_internal(char **args)
     const char bg[] = "bg";
     const char exit[] = "exit";
 
-    if (!strcmp(args[0], cd))
-    {
+    if (!strcmp(args[0], cd)) {
         internal_cd(args);
         comandoInterno = 1;
-    }
-    else if (!strcmp(args[0], export))
-    {
+    } else if (!strcmp(args[0], export)) {
         internal_export(args);
         comandoInterno = 1;
-    }
-    else if (!strcmp(args[0], source))
-    {
+    } else if (!strcmp(args[0], source)) {
         internal_source(args);
         comandoInterno = 1;
-    }
-    else if (!strcmp(args[0], jobs))
-    {
+    } else if (!strcmp(args[0], jobs)) {
         internal_jobs(args);
         comandoInterno = 1;
-    }
-    else if (!strcmp(args[0], fg))
-    {
+    } else if (!strcmp(args[0], fg)) {
         internal_fg(args);
         comandoInterno = 1;
-    }
-    else if (!strcmp(args[0], bg))
-    {
+    } else if (!strcmp(args[0], bg)) {
         internal_bg(args);
         comandoInterno = 1;
-    }
-    else if (!strcmp(args[0], exit))
-    {
+    } else if (!strcmp(args[0], exit)) {
         internal_exit(args);
         comandoInterno = 1;
     }
@@ -202,9 +179,8 @@ int check_internal(char **args)
 /*
 Utiliza la llamada al sistema chdir() para cambiar de directorio
 */
-int internal_cd(char **args)
-{
-    // falta control de error
+int internal_cd(char **args) {
+    // Falta control de error
     char *linea = malloc(sizeof(char) * COMMAND_LINE_SIZE);
     // Separadores: comilla,comillas, barra
     const int sep[] = {34, 39, 92};
@@ -239,7 +215,7 @@ int internal_export(char **args) {
 
     if (nombre == NULL || valor == NULL){
         fprintf(stderr, "Error de sintaxis");
-    }else { 
+    } else { 
         printf("[internal_export() → nombre: %s]\n", nombre);
         printf("[internal_export() → valor: %s]\n", valor);
         printf("[internal_export() → antiguo valor para %s: %s]\n", nombre, getenv(nombre));
