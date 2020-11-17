@@ -209,55 +209,44 @@ int internal_cd(char **args)
     // Separadores: comilla,comillas, barra
     const int sep[] = {34, 39, 92};
 
-    if (args[1]) {
-        // Empezamos con "No permitido"
-        int permitido = 0;
-        for (int i = 0; sep[i] && !permitido; i++) {
-            if (args[1][i] == (char)sep[i]) {
-                permitido = 1;
-            }
-        }
-
-        if (permitido) {
-            fprintf(stderr, "Error: Too much arguments\n");
-        } else {
-            chdir(args[1]);
-        }
+    if (args[2]) {
+        fprintf(stderr, "Error: Too much arguments\n");
     } else {
         if (args[1] == NULL) {
             if (chdir(getenv("HOME"))) {
                 perror("Error");
             }
-
         } else {
-
-            char *token;
-            char *dir;
-
-            token = strtok(args[1], (char)sep);
-
-            while (token) {
-                printf("%s", token);
-                token = strtok(NULL, (char)sep);
-            }
-
             if (chdir(args[1])) {
                 perror("Error");
             }
-
         }
     }
 
     free(linea);
 
-    return 0;
+    return 1;
 }
 
-int internal_export(char **args)
-{
-#if DEBUG
-    printf("[internal_export() → Esta función asignará valores a variables de entorno]\n");
-#endif
+int internal_export(char **args) {
+    const char *separador= "=";
+    char *nombre, *valor;
+
+    if (args[1]) {
+        nombre = strtok(args[1], separador);
+        valor = strtok(NULL, separador);
+    }
+
+    if (nombre == NULL || valor == NULL){
+        fprintf(stderr, "Error de sintaxis");
+    }else { 
+        printf("[internal_export() → nombre: %s]\n", nombre);
+        printf("[internal_export() → valor: %s]\n", valor);
+        printf("[internal_export() → antiguo valor para %s: %s]\n", nombre, getenv(nombre));
+        setenv(nombre, valor, 1);
+        printf("[internal_export() → nuevo valor para %s: %s]\n", nombre, getenv(nombre));
+    }
+
     return 1;
 }
 
