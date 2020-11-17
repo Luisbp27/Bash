@@ -7,6 +7,17 @@
 #define ARGS_SIZE 64
 #define PROMPT '$'
 
+#define RED         "\x1b[91m"
+#define GREEN       "\x1b[92m"
+#define YELLOW      "\x1b[93m"
+#define BLUE        "\x1b[94m"
+#define MAGENTA     "\x1b[95m"
+#define CYAN        "\x1b[96m"
+#define WHITE       "\x1b[97m"
+#define COLOR_RESET "\x1b[0m"
+
+#define BLOND "\x1b[1m"
+
 char line[COMMAND_LINE_SIZE];
 
 // Function headers.
@@ -37,21 +48,19 @@ int main()
 *   Método para imprimir el PROMPT
 */
 void imprimir_prompt() {
-    char *prompt = malloc(sizeof(char) * COMMAND_LINE_SIZE);
-
-    //Get USERNAME
+    // Get USERNAME
     char *user = getenv("USER");
+    char *prompt = malloc(sizeof(char) * COMMAND_LINE_SIZE - sizeof(*user));
+
+    // Coge el directorio actual de trabajo
     getcwd(prompt, COMMAND_LINE_SIZE);
-    // Gets the current work directory.
-    // getcwd(aux, COMMAND_LINE_SIZE);
-    // Prints the prompt and the separator.
-    printf("%s: %s %c:", user, prompt, PROMPT);
+    // Imprime el promt y el separador
+    printf(BLOND RED "%s:" BLUE"%s " COLOR_RESET YELLOW "%c: " COLOR_RESET, user, prompt, PROMPT);
 
-    // frees the memory for prompt.
+    // Libera la memoria para ek prompt
     free(prompt);
+    free(user);
 
-    //PS1='$(tput bold; tput setaf 1)\u$(tput sgr0):$(tput bold; tput setaf 6)\w$(tput sgr0)$ '
-    //printf("%c ", PROMPT);
     fflush(stdout);
 }
 
