@@ -45,7 +45,7 @@ int main() {
 }
 
 /*
-*   Método para imprimir el PROMPT
+* Método para imprimir el PROMPT
 */
 void imprimir_prompt() {
     // Obtiene USERNAME
@@ -73,7 +73,7 @@ void imprimir_prompt() {
 }
 
 /*
-Leer una linea de la consola
+* Leer una linea de la consola
 */
 char *read_line(char *line) {
     imprimir_prompt();
@@ -143,6 +143,9 @@ int parse_args(char **args, char *line) {
     return nToken;
 }
 
+/*
+* 
+*/
 int check_internal(char **args) {
     int comandoInterno = 0;
 
@@ -180,9 +183,9 @@ int check_internal(char **args) {
     return comandoInterno;
 }
 
-/**
- * Método que borra un caracter de un "array/puntero"
- **/
+/*
+* Método que borra un caracter de un "array/puntero"
+*/
 void borradorCaracter(char *args, char caracter) {
     int indice = 0;
     int indiceNuevo = 0;
@@ -200,7 +203,7 @@ void borradorCaracter(char *args, char caracter) {
 }
 
 /*
-Utiliza la llamada al sistema chdir() para cambiar de directorio
+* Utiliza la llamada al sistema chdir() para cambiar de directorio
 */
 int internal_cd(char **args) {
     // Falta control de error
@@ -288,6 +291,9 @@ int internal_cd(char **args) {
     return 1;
 }
 
+/*
+*
+*/
 int internal_export(char **args) {
     const char *separador = "=";
     char *nombre, *valor;
