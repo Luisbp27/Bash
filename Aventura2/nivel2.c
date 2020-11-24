@@ -305,9 +305,7 @@ int internal_export(char **args) {
             printf("[internal_export() → valor: %s]\n", valor);
             printf("[internal_export() → antiguo valor para %s: %s]\n", nombre, getenv(nombre));
         #endif
-
         setenv(nombre, valor, 1);
-
         #if DEBUG
             printf("[internal_export() → nuevo valor para %s: %s]\n", nombre, getenv(nombre));
         #endif
