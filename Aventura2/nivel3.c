@@ -1,8 +1,10 @@
-// NIVEL 2
+// NIVEL 3
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <sys/types.h>
 
 #define DEBUG 1
 #define COMMAND_LINE_SIZE 1024
@@ -124,26 +126,70 @@ char *read_line(char *line) {
 */
 int execute_line(char *line) {
     //Reservamos memoria para los tokens
-
     char **args = malloc(sizeof(char *) * ARGS_SIZE);
-    if (args == NULL) {
-        fprintf(stderr, "Memoria dinamica llena.");
-    }
 
-    if (args) {
-        //Parseamos
+    if (args != NULL) {
+        // Parseamos
         parse_args(args, line);
-        if (args[0])
-        {
-            check_internal(args);
+
+        if (args[0]) {
+            if (!check_internal(args)) {
+                int state;
+                pid_t pid = fork();
+
+                // Hijo
+                if (pid == 0) {
+                    #if DEBUG3
+                        printf("[execute_line() → PID padre: %d]\n", getppid());
+                        printf("[execute_line() → PID hijo: %d]\n", getpid());
+                    #endif
+                    
+                    if (execvp(args[0], args)) {
+                        fprintf(stderr, "Error al leer el comando externo: %s.\n",args[0]);
+                        //Terminación anormal
+                        exit(EXIT_FAILURE);
+                    }
+
+                    // Salimos sin errores (Terminación Normal)
+                    exit(EXIT_SUCCESS);
+
+                // Padre    
+                } else if (pid > 0) {
+                    pid  = wait(&state);
+
+                    // Hijo ha terminado de manera normal
+                    if (WIFEXITED(state)) {
+                        #if DEBUG3
+                            printf("[EL proceso hijo %d ha finalizado con exit(), estado: %d]\n",pid ,WEXITSTATUS(state));
+                        #endif
+                    }
+
+                    // Hijo ha finalizado por señal
+                    if (WIFSIGNALED(state)) {
+                        #if DEBUG3
+                            printf("[EL proceso hijo %d ha finalizado por final, estado: %d]\n",pid ,WTERMSIG(state));
+                        #endif
+                    }
+
+                // Error de fork()
+                } else {
+                    perror("Error fork");
+                    //Terminación anormal
+                    exit(EXIT_FAILURE);
+                }
+            }
         }
+    } else {
+        fprintf(stderr, "Memoria dinámica llena.\n");
     }
 
-    //Liberamos memoria
+    // Liberamos memoria
     free(args);
 }
 
-// {line hacer esto #para esto} args[x][0]
+/**
+ * 
+ */
 int parse_args(char **args, char *line) {
     int nToken = 0;
     const char s[5] = " \t\r\n";
@@ -269,6 +315,34 @@ int internal_export(char **args) {
 }
 
 int internal_source(char **args) {
+    // Creamos la variable y reservamos memoria para leer las lineas del fichero
+    char *linea = (char *)malloc(sizeof(char) * COMMAND_LINE_SIZE);
+
+    if (linea) {
+        // Declaramos, instanciamos y creamos el enlace al fichero a leer
+        FILE *fichero = fopen(args[1], "r");
+
+        // Si existe el fichero
+        if(fichero) {
+            // Leemos las lineas y las ejecutamos
+            while (fgets(linea, COMMAND_LINE_SIZE, fichero)) {
+                execute_line(linea);
+                fflush(fichero);
+            }
+
+            fclose(fichero);
+            free(linea);
+
+            return EXIT_SUCCESS;
+        } else {
+            // Error al leer el fichero
+            perror("Error");
+            free(linea);
+        }
+    }
+
+    return EXIT_FAILURE;
+
     #if DEBUG
         printf("[internal_source() → Esta función ejecutará un fichero de líneas de comandos]\n");
     #endif
