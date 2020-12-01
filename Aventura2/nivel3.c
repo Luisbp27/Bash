@@ -5,8 +5,13 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/wait>
 
-#define DEBUG 1
+#define DEBUG0 0
+#define DEBUG1 0
+#define DEBUG2 0
+#define DEBUG3 1
+
 #define COMMAND_LINE_SIZE 1024
 #define ARGS_SIZE 64
 #define PROMPT '$'
@@ -33,6 +38,18 @@ int internal_cd(char **args);
 int internal_export(char **args);
 int internal_source(char **args);
 int internal_jobs(char **args);
+int internal_fg(char **args);
+int internal_bg(char **args);
+int internal_exit(char **args);
+int internal_fg(char **args);
+
+int chdir();
+int getcwd();
+int setenv();
+int fork();
+int execvp();
+int getppid();
+int getpid();
 
 /*
 * Main del programa.
@@ -111,11 +128,18 @@ Leer una linea de la consola
 */
 char *read_line(char *line) {
     imprimir_prompt();
+    char* ptr = fgets(line, COMMAND_LINE_SIZE, stdin);
+   
+    // Leemos la entrada introducida en stdin por el usuario
+    if (ptr == NULL) {
+        printf("\r\n");
 
-    // Reads input introduced in stdin by the user.
-    // Control de errores
-    if (fgets(line, COMMAND_LINE_SIZE, stdin) == NULL) {
-        perror("Error");
+        if (feof(stdin)) {
+            printf("Adeu\n");
+            exit(0);
+        } else {
+            perror("Error");
+        }
     }
 
     return line;
