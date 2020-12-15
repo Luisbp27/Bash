@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
-#include <sys/wait>
+#include <sys/wait.h>
 
 #define DEBUG0 0
 #define DEBUG1 0
