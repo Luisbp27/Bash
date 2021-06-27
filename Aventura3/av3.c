@@ -2,24 +2,25 @@
  * Sistemas Operativos - AVENTURA 3
  *
  * Jorge González Pascual - Lluís Barca Pons - Joan Martorell Ferriol
- * 
- * https://docs.google.com/spreadsheets/d/1SHWzoLrsc3F8C1x6Y0PlHKa-m-9vxHZ0wIcmEwIVpgc/edit#gid=1700644240
  */
 
+// Librerias
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 
 #include "my_lib.h"
 
-#define NUM_THREADS 5
-#define NUM_ITERATIONS 5
+// Constantes
+#define NUM_THREADS 10
+#define NUM_ITERATIONS 1000000
 
-#define DEBUG 1
+#define DEBUG 0
 
 // Funciones
 struct my_stack *init_stack(char *file);
 void *worker(void *ptr);
+void filling();
 
 // Variables
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -35,8 +36,8 @@ int main(int args, char *argv[])
 
     if (nameStack)
     {
-        printf("Hilos: %i, Iteraciones: %i \n", NUM_THREADS, NUM_ITERATIONS);
         stack = init_stack(nameStack);
+        printf("Hilos: %i, Iteraciones: %i \n", NUM_THREADS, NUM_ITERATIONS);
 
         // Crear los hilos
         pthread_t threads[NUM_THREADS];
@@ -44,7 +45,7 @@ int main(int args, char *argv[])
         for (int i = 0; i < NUM_THREADS; i++)
         {
             pthread_create(&threads[i], NULL, worker, NULL);
-            printf("\n%d - Hilo %ld creado", i, threads[i]);
+            printf("%d) Hilo %ld creado\n", i, threads[i]);
         }
 
         // Esperar hasta que los hilos acaben
@@ -55,9 +56,10 @@ int main(int args, char *argv[])
 
         // Guardar en la pila
         int var = my_stack_write(stack, argv[1]);
-        printf("\n\nElementos escritos de la pila al fichero: %d", var);
+        printf("Longitud de la pila: %d\n", my_stack_len(stack));
+        printf("Elementos escritos de la pila al fichero: %d\n", var);
         var = my_stack_purge(stack);
-        printf("\nBytes eliminados: %d\n", var);
+        printf("Bytes eliminados: %d\n\n", var);
 
         return EXIT_SUCCESS;
     }
@@ -69,90 +71,114 @@ int main(int args, char *argv[])
 }
 
 /**
- * Método que incicializa la pila
- */ 
+ * Método que inicializa la pila
+ * Si la pilla existe miramos la longitud
+ * Si < 10: rellenar los restantes
+ * Si > 10: Los ignoramos
+ */
 struct my_stack *init_stack(char *file)
 {
-    struct my_stack *stack;
+    //struct my_stack *stack;
     stack = my_stack_read(file);
 
     // Si la pila existe
-    if (stack)
+    if (my_stack_len(stack) > 0)
     {
-        printf("\nLongitud inicial de la pila: %d\n", my_stack_len(stack));
+        printf("Longitud inicial de la pila: %d\n", my_stack_len(stack));
 
-        int len = my_stack_len(stack);
-        // Si no hay 10 elemenotos
-        if (len != NUM_THREADS)
+        // Si < 10: rellenar los restantes
+        // Si > 10: Los ignoramos
+        if (my_stack_len(stack) < NUM_THREADS)
         {
-            // Si < 10: rellenar los restantes
-            if (len < NUM_THREADS)
-            {
-                // Rellenamos la pila
-                for (int i = len; i < NUM_THREADS; i++)
-                {
-                    int *data = malloc(sizeof(int));
-                    *data = 0;
-                    my_stack_push(stack, data);
-                }
-            }
-            // Si > 10: Nos quedeamos con los 10 primeros
-            else
-            {
-                // Vaciamos la pila
-                while (my_stack_len(stack) != NUM_THREADS)
-                {
-                    my_stack_pop(stack);
-                }
-            }
+            // Rellenamos la pila hasta NUM_THREADS
+            filling();
         }
     }
     // Si no esta creada la pila la creamos
     else
     {
-        stack = my_stack_init(sizeof(int));
-
-        //Imprimir algo??
-        while (my_stack_len(stack) != NUM_THREADS)
-        {
-            int *data = malloc(sizeof(int));
-            *data = 0;
-            my_stack_push(stack, data);
-        }
+        stack = my_stack_init(sizeof(int*));
+        printf("Stack->size: %ld\n", sizeof(int));
+        filling();
     }
 
-    //Imprimir algo???
+    printf("Longitud final de la nueva pila: %d\n", my_stack_len(stack));
 
     return stack;
 }
 
+/**
+ * Método que rellena la pila con los valores que faltan para su tratamiento 
+ * y printea el contenido inicial y final de la pila.
+ */
+void filling()
+{
+    struct my_stack *auxStack = my_stack_init(stack->size);
+    int filled = 0;
+
+    printf("Contenido inicial de la pila:\n");
+
+    while (my_stack_len(stack) != 0)
+    {
+        int *data = malloc(sizeof(int));
+        data = my_stack_pop(stack);
+        printf("%d\n", *data);
+        my_stack_push(auxStack, data);
+    }
+    //Rellenamos en el caso de que falten
+    while (my_stack_len(auxStack) < NUM_THREADS)
+    {
+        filled = 1;
+        int *data = malloc(sizeof(int));
+        *data = 0;
+        my_stack_push(auxStack, data);
+    }
+
+    printf("Longitud inicial de la pila: %d\n", my_stack_len(stack));
+    printf("Aplicado contenido para el tratamiento:\n");
+    //Una vez hecho el procedimiento lo asignamos a la original
+    if (filled)
+    {
+        while (my_stack_len(auxStack) != 0)
+        {
+            int *data = malloc(sizeof(int));
+            data = my_stack_pop(auxStack);
+            printf("%d\n", *data);
+            my_stack_push(stack, data);
+        }
+    }
+}
+
+/**
+ * Método que regula la actividad de los hilos mediante un semáforo
+ */
 void *worker(void *ptr)
 {
     int i = 0;
-
-    int *data;
 
     while (i < NUM_ITERATIONS)
     {
         // Sección crítica nº1
         pthread_mutex_lock(&mutex);
-#ifdef DEBUG
+#if DEBUG
         printf("\nSoy el hilo %ld ejecutando pop", pthread_self());
 #endif
-        data = my_stack_pop(stack);
+        int *data = my_stack_pop(stack);
         pthread_mutex_unlock(&mutex);
+        //
 
         (*data)++;
 
         // Sección crítica nº2
         pthread_mutex_lock(&mutex);
-#ifdef DEBUG
+#if DEBUG
         printf("\nSoy el hilo %ld ejecutando push", pthread_self());
 #endif
         my_stack_push(stack, data);
         i++;
         pthread_mutex_unlock(&mutex);
+        //
     }
 
-    pthread_exit(NULL);
+    pthread_exit(0);
 }

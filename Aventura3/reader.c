@@ -8,6 +8,9 @@
 #include <limits.h>
 #include "my_lib.h"
 
+#define NUM_THREADS 10
+
+
 int main(int argc, char *argv[])
 {
     struct my_stack *stack;
@@ -23,34 +26,30 @@ int main(int argc, char *argv[])
             int min = INT_MAX;
             int max = 0;
             int average = 0;
-            printf("Longitud pila: %d", length);
+            printf("Longitud pila: %d\n", length);
 
-            // Mientras la pila no esté vacía
-            while (my_stack_len(stack))
+            // Mientras la pila no esté vacía            
+            for (int i = 0; i < NUM_THREADS; i++)
             {
                 int *data;
                 data = my_stack_pop(stack);
 
                 sum += *data;
 
-                if (*data < min) 
+                if (*(data) < min) 
                 {
                     min = *data;
-                }
-                else if (*data > max) 
+                } else if (*data > max) 
                 {
                     max = *data;
                 }
                 
-                printf("\n%d\n", *data);
+                printf("%d\n", *data);
             }
+            
+            average = sum / NUM_THREADS;
 
-            if (length) 
-            {
-                average = sum / length;
-            }
-
-            printf("Elementos: %d Suma: %d Mínimo: %d, Máximo: %d, Media: %d\n", length, sum, min, max, average);
+            printf("Elementos: %d Suma: %d Mínimo: %d, Máximo: %d, Media: %d\n\n", length, sum, min, max, average);
         }
         else
         {
